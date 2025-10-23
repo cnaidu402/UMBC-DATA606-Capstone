@@ -68,15 +68,15 @@ The workflow is a multi-step process:
 * **Data Manipulation:** Pandas
 * **Visualization:** Plotly
 * **Web Framework:** Flask
-# 4.🏏 Exploratory Data Analysis (EDA) – Asia Cup Cricket Dataset
+## 4.🏏 Exploratory Data Analysis (EDA) – Asia Cup Cricket Dataset
 
 This phase was critical for understanding the datasets, identifying quality issues, and preparing the data to serve as a reliable knowledge base for the LLM agent.
 
 ---
 
-## 4.1. Data Cleansing and Preparation
+### 4.1. Data Cleansing and Preparation
 
-### 🔹 Data Loading
+#### 🔹 Data Loading
 All **8 CSV files** were loaded into separate **Pandas DataFrames** for independent inspection and analysis.
 
 ### 🔹 Handling Missing Values (Nulls)
