@@ -1,70 +1,102 @@
-# Cricket Query AI 
+4. Exploratory Data Analysis (EDA)
 
-**Prepared for: UMBC Data Science Master Degree Capstone by Dr. Chaojie (Jay) Wang**
-**Author: Charan Kumar Pathakamuri**
+This phase was critical for understanding the datasets, identifying quality issues, and preparing the data to serve as a reliable knowledge base for the LLM agent.
 
-- **GitHub Repo:** `https://github.com/cnaidu402/UMBC-DATA606-Capstone/`
-- **LinkedIn Profile:** `https://www.linkedin.com/in/charan-kumar/`
+4.1. Data Cleansing and Preparation
 
+Data Loading: All 8 CSV files were loaded into separate Pandas DataFrames.
 
----
+Handling Missing Values (Nulls):
 
-## 1. Background
+A helper function, checknull(), was defined to systematically count missing values.
 
-### What is it about? 🏏
-
-This project focuses on creating **Cricket Query AI**, a sophisticated Text-to-SQL and Text-to-Chart conversational agent using a Large Language Model (LLM). This AI will act as an expert sports analyst for the Asia Cup cricket tournament. Users can ask complex questions in plain English, and the system will respond not only with precise data but also with rich, **interactive visualizations**. For example, a user could ask, "Show me Virat Kohli's run progression over the years," and the agent would generate a line chart to display the trend visually.
-
-### Why does it matter? 💡
-
-While Text-to-SQL systems democratize data access, raw numbers in a table don't always tell the full story. The human brain processes visual information far more effectively. By integrating **automated visualization generation**, this project bridges the final gap between raw data and true insight. It allows non-technical users to not only *query* the data conversationally but also to *see* the patterns, trends, and comparisons instantly. This transforms the user experience from simple data retrieval to dynamic, visual data exploration.
-
-### What are your research questions? 🤔
-
-* How effectively can an LLM generate accurate **SQL queries** from complex, natural language questions related to the Asia Cup cricket datasets?
-* What is the most effective contextual training strategy (using schema, documentation, and few-shot examples) for the LLM to master cricket-specific terminology and query patterns?
-* Can the LLM agent correctly **infer the user's intent for visualization** and choose the most appropriate chart type (e.g., bar chart for comparison, line chart for time-series, pie chart for composition)?
+def checknull(df):
+    return df.isnull().sum()
 
 
----
+The asiacup.csv file had several rows with missing data. These rows were dropped using dropna() to ensure all match records are complete.
 
-## 2. Data
+The champion.csv file had "Not Awarded" text in the 'Player Of The Series' column, which was replaced with None to be handled correctly.
 
-### Data Sources
-Dataset Link: https://www.kaggle.com/datasets/hasibalmuzdadid/asia-cup-cricket-1984-to-2022 s
-The knowledge base for the LLM agent will be a relational database (e.g., SQLite) created from the 8 provided CSV files, with each file becoming a table. This structured environment is what the agent will query and visualize.
-* `asiacup.csv`
-* `champion.csv`
-* `batsman data odi.csv` & `batsman data t20i.csv`
-* `bowler data odi.csv` & `bowler data t20i.csv`
-* `wicketkeeper data odi.csv` & `wicketkeeper data t20i.csv`
+Data Type Correction: Numeric columns used for analysis (e.g., 'Run Rate', 'Avg') were converted to float or int types to ensure calculations are possible.
 
----
+Player Name Standardization: A key challenge was the inconsistent player names (e.g., "Arjuna Ranatunga" vs. "A Ranatunga"). A fuzzy matching function was created to compare players based on their last name (e.g., "Ranatunga") in a case-insensitive way. This was essential for accurately linking the champion table to the player stats tables.
 
-## 3. The LLM System Workflow
+4.2. Visualizations and Interpretations
 
-The project's core is the LLM's ability to act as a multi-talented "Reasoning Engine" that can translate natural language into both database queries and visualization code.
+Interactive visualizations were generated using Plotly to answer key analytical questions.
 
-The workflow is a multi-step process:
+Visualization 1: Average Run Rate per Year (ODI)
 
-1.  **Question Understanding:** The user asks a question like, *"Compare the strike rates of the top 5 run-scorers in the 2022 T20I tournament."*
+Question: Has the pace of scoring in ODI matches changed over time?
 
-2.  **SQL Generation:** The LLM, using its contextual training (schema, docs, examples), generates the appropriate SQL query to retrieve the necessary data from the database.
+import plotly.express as px
 
-3.  **Data Retrieval:** The SQL query is executed, and the results are returned as a data structure (e.g., a Pandas DataFrame).
+# Filter for ODIs and group by 'Year'
+odi_matches = asia_cup[asia_cup['Format'] == 'ODI']
+avg_run_rate_per_year = odi_matches.groupby('Year')['Run Rate'].mean().reset_index()
 
-4.  **Visualization Intent & Code Generation:** The LLM analyzes both the original question and the data results. It recognizes the intent to "compare" and determines that a bar chart is the best visualization. It then generates the required **Python code using the Plotly library** to create this chart, ensuring correct labels, titles, and data mapping.
+# Create the interactive bar graph
+fig = px.bar(
+    avg_run_rate_per_year,
+    x='Year',
+    y='Run Rate',
+    title='Average Run Rate per Year in ODI Matches',
+    text='Run Rate'
+)
+fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+fig.show()
 
-5.  **Response Delivery:** The final output presented to the user includes both the data table and the interactive Plotly visualization.
+
+Interpretation: The bar chart shows a clear and steady upward trend in average run rates. The scoring rate, which was often below 4.0 runs per over in the 1980s, has consistently climbed to well over 4.5 in recent tournaments. This visually confirms the shift towards more aggressive batting in modern ODI cricket.
+
+Visualization 2: Does Winning the Toss Mean Winning the Match?
+
+Question: How much of an advantage does winning the coin toss provide?
+
+import plotly.graph_objects as go
+
+# Filter for toss winners and check if they also won the match
+toss_winners = asia_cup[asia_cup['Toss'].str.lower() == 'win'].copy()
+toss_winners['Toss Winner Won Match'] = toss_winners['O/T Result'].str.lower() == 'win'
+
+# Get counts for the chart
+outcome_counts = toss_winners['Toss Winner Won Match'].value_counts()
+labels = outcome_counts.index.map({True: 'Won the Match', False: 'Lost the Match'})
+values = outcome_counts.values
+
+# Create the Donut Chart
+fig = go.Figure(data=[go.Pie(
+    labels=labels,
+    values=values,
+    hole=.4,
+    marker_colors=['deepskyblue', 'indianred'],
+    textinfo='percent+label'
+)])
+fig.update_layout(title_text='Does Winning the Toss Mean Winning the Match?')
+fig.show()
 
 
+Interpretation: The donut chart reveals a near 50/50 split. Teams that win the toss win the match slightly more often than they lose, but the advantage is minimal. This suggests that winning the toss is not a decisive factor in winning the game on its own.
 
-### Technologies Used
+Visualization 3: Source of "Player of The Series" Awards
 
-* **Language:** Python
-* **LLM Framework:** Vanna.AI (or a similar framework like LangChain)
-* **LLM:** Google Gemini (or another powerful model)
-* **Database:** SQLite / MS SQL Server
-* **Data Manipulation:** Pandas
-* **Visualization:** Plotly
-* **Web Framework:** Flask
+Question: Does the tournament's best player usually come from the winning team? (This required our fuzzy name matching to link tables).
+
+# --- This code assumes 'champion_filtered' DataFrame is already created ---
+# --- with 'Award Category' (Champion Team, Runner Up Team, Other Team) ---
+# --- which was generated using the fuzzy name matching logic ---
+
+# category_counts = champion_filtered['Award Category'].value_counts()
+
+# fig = go.Figure(data=[go.Pie(
+#     labels=category_counts.index,
+#     values=category_counts.values,
+#     hole=.4,
+#     textinfo='percent+label'
+# )])
+# fig.update_layout(title_text='Player of The Series Award Distribution')
+# fig.show()
+
+
+Interpretation: The analysis (visualized as a donut chart) showed that the vast majority of "Player of The Series" awards are given to players from the champion (winning) team. A smaller portion goes to the runner-up team, and it is extremely rare for a player from another team to win. This indicates a strong bias towards selecting the best player from one of the top two teams.
