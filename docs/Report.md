@@ -8,6 +8,10 @@
 
 🔗 **LinkedIn:**  https://www.linkedin.com/in/charan-kumar/
 
+🔗 **Video Link:** https://drive.google.com/file/d/1qiTNywDyGIaZi2DanD0LVTCyU08tF1eU/view?usp=sharing
+
+🔗 **PPT Link:** https://docs.google.com/presentation/d/1gZn5iQdmS9uqDmjZ_k4eIMOmBIOIJgDB/edit?usp=sharing&ouid=101843104812874478278&rtpof=true&sd=true 
+
 ---
 
 ## 1. Background
