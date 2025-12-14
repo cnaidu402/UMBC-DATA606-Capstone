@@ -4,11 +4,9 @@
 **Instructor:** Dr. Chaojie (Jay) Wang  
 **Author:** Charan Kumar Pathakamuri  
 
-🔗 **GitHub Repository:**  
-https://github.com/cnaidu402/UMBC-DATA606-Capstone/
+🔗 **GitHub Repository:**  https://github.com/cnaidu402/UMBC-DATA606-Capstone/
 
-🔗 **LinkedIn:**  
-https://www.linkedin.com/in/charan-kumar/
+🔗 **LinkedIn:**  https://www.linkedin.com/in/charan-kumar/
 
 ---
 
